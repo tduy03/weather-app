@@ -1,15 +1,9 @@
 import React from 'react';
 import { convertTemp, convertSpeed, getTempUnit } from "../utils/unitConversion";
 
-const CurrentWeather = ({ data, isMetric }) => {
-  if (!data) {
-    return (
-      <div className="flex items-center justify-center text-white/40">
-        Loading weather...
-      </div>
-    );
-  }
-
+const CurrentWeather = ({ data, isMetric, error }) => {
+   if (!data) return null;
+   
   const { name, main, weather, wind, visibility } = data;
 
   const iconUrl = `https://openweathermap.org/img/wn/${weather[0].icon}@4x.png`;
@@ -48,6 +42,11 @@ const CurrentWeather = ({ data, isMetric }) => {
         <div>
           <h3 className="text-lg font-semibold">{name}</h3>
           <p className="text-xs text-white/60">{formattedDate}</p>
+          {error && (
+            <p className="text-xs text-red-400 mt-1">
+              City not found. Please try again.
+            </p>
+          )}
         </div>
       </div>
 
@@ -55,12 +54,6 @@ const CurrentWeather = ({ data, isMetric }) => {
         
         {/* Container cho Nhiệt độ và Icon nằm ngang hàng */}
         <div className="flex items-center justify-center gap-2">
-          
-          {/* <img 
-            src={iconUrl} 
-            alt={weather[0].description} 
-            className="w-24 h-24 object-contain" 
-          /> */}
           <h1 className="text-[100px] font-[200] leading-none tracking-tighter">
             {convertTemp(main.temp, isMetric)}°
           </h1>

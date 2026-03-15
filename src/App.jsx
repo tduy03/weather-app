@@ -22,8 +22,12 @@ function App() {
 
     try {
       const data = await getWeatherData(city);
-      console.log(data); // test trước
+      // console.log(data); // test trước
       setWeatherData(data);
+
+      // Lưu vào localStorage
+      localStorage.setItem("lastCity", city);
+
     } catch (err) {
       setError("City not found");
     } finally {
@@ -32,7 +36,13 @@ function App() {
   };
 
   useEffect(() => {
-    handleSearch("Hanoi");
+    const savedCity = localStorage.getItem("lastCity");
+
+    if (savedCity) {
+      handleSearch(savedCity);
+    } else {
+      handleSearch("Hanoi");
+    }
   }, []);
 
   return (
@@ -48,10 +58,19 @@ function App() {
 
       <main className="relative z-10 w-[1050px] h-[700px] bg-[#141416]/75 backdrop-blur-[40px] rounded-[40px] grid grid-cols-[380px_1fr] pt-6 pb-10 px-10 gap-[30px] shadow-[0_50px_100px_rgba(0,0,0,0.5)] border border-white/10">
         
+        {loading && (
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center rounded-[40px] z-50">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <p className="text-white/60 text-sm">Loading weather...</p>
+            </div>
+          </div>
+        )}
         {/* Left Column */}
         <CurrentWeather 
           data={weatherData?.current}
           isMetric={isMetric}
+          error={error}
         />
 
         {/* Right Column */}

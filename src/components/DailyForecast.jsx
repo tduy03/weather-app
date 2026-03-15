@@ -12,7 +12,11 @@ const DailyForecast = ({ data, isMetric}) => {
    const unit = getTempUnit(isMetric);
 
    const currentWind= convertSpeed(data.list[0].wind.speed, isMetric);
-   const rainProbability = Math.round((data.list[0].pop || 0) * 100);
+
+   const today = data.list.slice(0, 8); // 24h đầu (3h mỗi slot)
+    const rainProbability = Math.round(
+    Math.max(...today.map(item => item.pop || 0)) * 100
+  );
 
   // 🔹 Lọc mốc 12:00:00 mỗi ngày
   const dailyData = data.list
