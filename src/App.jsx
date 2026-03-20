@@ -6,6 +6,9 @@ import HourlyForecast from './components/HourlyForecast';
 import DailyForecast from './components/DailyForecast';
 import { getWeatherData } from './api/weatherApi';
 import { useState, useEffect } from 'react';
+import { getBackgroundGif } from './utils/backgroundLogic';
+import { Sun, Moon } from 'lucide-react';
+import WeatherMetrics from './components/WeatherMetrics';
 
 function App() {
 
@@ -14,7 +17,20 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // 1. Khởi tạo state dark mode từ localStorage
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem("theme") === "light" ? false : true;
+  });
+
+  // 2. Lưu theme mỗi khi thay đổi
+  useEffect(() => {
+    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+  }, [isDarkMode]);
+
   const [isMetric, setIsMetric] = useState(true);
+
+  // Lấy link GIF dựa trên thời tiết hiện tại
+  const currentGif = getBackgroundGif(weatherData);
 
   const handleSearch = async (city) => {
     setLoading(true);
@@ -24,7 +40,6 @@ function App() {
       const data = await getWeatherData(city);
       // console.log(data); // test trước
       setWeatherData(data);
-
       // Lưu vào localStorage
       localStorage.setItem("lastCity", city);
 
@@ -47,17 +62,26 @@ function App() {
 
   return (
     <div 
-      className="h-screen w-full flex items-center justify-center bg-[#1a1a1c] relative overflow-hidden text-white"
+      className={`min-h-screen w-full flex items-start md:items-center justify-center relative overflow-y-auto scrollbar-hide transition-colors duration-500 ${
+      isDarkMode ? 'bg-[#1a1a1c] text-white' : 'bg-[#f0f2f5] text-slate-800'
+    }`}
       style={{ 
-        backgroundImage: "url('https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?q=80&w=1974&auto=format&fit=crop')",
+        backgroundImage: `url('${currentGif}')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
       }}
     >
-      <div className="fixed inset-0 bg-black/40 z-0"></div>
-
-      <main className="relative z-10 w-[1050px] h-[700px] bg-[#141416]/75 backdrop-blur-[40px] rounded-[40px] grid grid-cols-[380px_1fr] pt-6 pb-10 px-10 gap-[30px] shadow-[0_50px_100px_rgba(0,0,0,0.5)] border border-white/10">
-        
+      {/* Overlay: Giúp làm dịu hình nền */}
+      <div className={`fixed inset-0 z-0 transition-colors duration-500 ${
+        isDarkMode ? 'bg-black/30' : 'bg-slate-500/60' 
+      }`}></div>
+      <main className={`main-container relative z-10 w-[92%] max-w-[1050px] md:h-[710px] rounded-[35px] 
+        flex flex-col md:grid md:grid-cols-[380px_1fr] p-6 md:pt-7 md:pb-8 md:px-10 gap-6 md:gap-[30px] shadow-2xl border transition-all duration-500 ${
+        isDarkMode 
+          ? 'bg-[#141416]/60 border-white/10 backdrop-blur-md' 
+          : 'bg-white/10 border-white/40 backdrop-blur-xl'
+      }`}>
         {loading && (
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center rounded-[40px] z-50">
             <div className="flex flex-col items-center gap-3">
@@ -66,33 +90,58 @@ function App() {
             </div>
           </div>
         )}
+
+        <div className="block md:hidden">
+          <SearchBar 
+            onSearch={handleSearch}
+            isMetric={isMetric}
+            setIsMetric={setIsMetric}
+            isDarkMode={isDarkMode}
+            setIsDarkMode={setIsDarkMode}
+          />
+        </div>
+
         {/* Left Column */}
         <CurrentWeather 
           data={weatherData?.current}
           isMetric={isMetric}
+          isDarkMode={isDarkMode}
           error={error}
         />
 
         {/* Right Column */}
         <section className="flex flex-col justify-between">
-          <SearchBar onSearch={handleSearch}
+          <div className="hidden md:block">
+            <SearchBar 
+              onSearch={handleSearch}
               isMetric={isMetric}
               setIsMetric={setIsMetric}
-          />
+              isDarkMode={isDarkMode}
+              setIsDarkMode={setIsDarkMode}
+            />
+          </div>
           {weatherData && (
             <div className="flex flex-col gap-3 grow justify-between">
               <HourlyForecast 
                 data={weatherData.forecast}
                 isMetric={isMetric}
+                isDarkMode={isDarkMode}
               />
               <DailyForecast 
                 data={weatherData.forecast}
                 isMetric={isMetric}
+                uvIndex={weatherData.uvIndex}
+                isDarkMode={isDarkMode}
+              />
+
+              <WeatherMetrics 
+                data={weatherData.current} 
+                isMetric={isMetric} 
+                className="grid md:hidden mt-2 mb-4" 
               />
             </div>
           )}
         </section>
-
       </main>
     </div>
   );

@@ -15,3 +15,23 @@
     background: rgba(255, 255, 255, 0.06); 
     border: 1px solid rgba(255, 255, 255, 0.12); 
 }
+
+/* 1. Ẩn thanh cuộn cho toàn bộ app để trông như app mobile xịn */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 2. Media query dành riêng cho mobile nhỏ hơn 480px */
+@media (max-width: 480px) {
+  .main-container {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 20px !important;
+    overflow-y: visible !important;
+  }
+}
+

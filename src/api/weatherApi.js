@@ -16,9 +16,24 @@ export const getWeatherData = async (cityName) => {
       params: { q: cityName, appid: API_KEY, units: 'metric' },
     });
 
+    // 3️. One Call (UV Index)
+    const { lat, lon } = currentData.coord;
+    const { data: uvData } = await axios.get(
+      "https://api.open-meteo.com/v1/forecast",
+      {
+        params: {
+          latitude: lat,
+          longitude: lon,
+          current: "uv_index"
+        }
+      }
+    );
+    const uvIndex = uvData.current.uv_index;
+    
     return {
       current: currentData,
-      forecast: forecastData
+      forecast: forecastData,
+      uvIndex
     };
   } catch (error) {
     console.error("Error fetching weather data:", error);
